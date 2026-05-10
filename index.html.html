@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Galleria del Vento Pininfarina — Architettura & Fisica del Flusso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1e2d45;
+    --surface: #27394f;
+    --surface2: #324860;
+    --border: #3d5c7a;
+    --accent: #e8390e;
+    --accent2: #f97c2e;
+    --accent3: #ffc53d;
+    --blue: #3b82f6;
+    --blue-dim: #1e3a5f;
+    --teal: #0ea5a8;
+    --text: #f0f6ff;
+    --text-dim: #b0ccdf;
+    --text-muted: #7a9ab8;
+    --mono: 'IBM Plex Mono', monospace;
+    --head: 'Barlow Condensed', sans-serif;
+    --body: 'Barlow', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+    padding: 2rem;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, #0d2040 0%, var(--bg) 70%);
+  }
+
+  .hero-lines {
+    position: absolute; inset: 0;
+    opacity: 0.12;
+  }
+
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero h1 {
+    font-family: var(--head);
+    font-weight: 900;
+    font-size: clamp(2.8rem, 8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    color: #fff;
+    position: relative;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-sub {
+    font-family: var(--head);
+    font-weight: 300;
+    font-size: clamp(1rem, 2.5vw, 1.6rem);
+    color: var(--text-dim);
+    margin-top: 1rem;
+    letter-spacing: 0.05em;
+    position: relative;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-stats {
+    display: flex; gap: 3rem; margin-top: 3rem;
+    flex-wrap: wrap; justify-content: center;
+    position: relative;
+    animation: fadeUp 0.8s 0.35s ease both;
+  }
+
+  .stat-item { text-align: center; }
+  .stat-val {
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.2em;
+    color: var(--text-muted); text-transform: uppercase;
+    animation: bounce 2s infinite;
+  }
+  .scroll-hint::after { content: ' ↓'; }
+
+  /* ── TUNNEL SVG DIAGRAM ── */
+  .tunnel-section {
+    padding: 4rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    color: #fff;
+    margin-bottom: 2rem;
+  }
+
+  .tunnel-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1.5rem;
+    overflow: hidden;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards-section {
+    padding: 2rem 2rem 5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.25s;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .card.revealed {
+    opacity: 1; transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.25s, background 0.25s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .card:hover { border-color: #2e4460; background: var(--surface2); transform: translateY(-2px); }
+  .card:hover::before { transform: scaleX(1); }
+
+  .card-num {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 1rem;
+  }
+
+  .card-icon {
+    margin-bottom: 1.2rem;
+  }
+
+  .card h3 {
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.01em;
+  }
+
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .card-cta {
+    margin-top: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+
+  .card-cta::after { content: '→'; transition: transform 0.2s; }
+  .card:hover .card-cta::after { transform: translateX(4px); }
+
+  /* card color accents */
+  .card[data-color="red"] .card-cta { color: var(--accent); }
+  .card[data-color="orange"] .card-cta { color: var(--accent2); }
+  .card[data-color="yellow"] .card-cta { color: var(--accent3); }
+  .card[data-color="blue"] .card-cta { color: var(--blue); }
+  .card[data-color="teal"] .card-cta { color: var(--teal); }
+
+  .card[data-color="red"]::before { background: var(--accent); }
+  .card[data-color="orange"]::before { background: var(--accent2); }
+  .card[data-color="yellow"]::before { background: var(--accent3); }
+  .card[data-color="blue"]::before { background: var(--blue); }
+  .card[data-color="teal"]::before { background: var(--teal); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(5,8,14,0.92);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 2rem 1rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    max-width: 860px; width: 100%;
+    position: relative;
+    transform: translateY(30px) scale(0.97);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    margin: auto;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-header {
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .modal-header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent-line, linear-gradient(90deg, var(--accent), var(--accent2)));
+  }
+
+  .modal-tag {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .modal-title {
+    font-family: var(--head);
+    font-weight: 900;
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    color: #fff;
+    line-height: 1;
+  }
+
+  .modal-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1rem;
+    transition: background 0.2s, color 0.2s;
+  }
+  .modal-close:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .modal-body {
+    padding: 2rem 2.5rem;
+  }
+
+  .modal-body h4 {
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.8rem 0 0.7rem;
+  }
+
+  .modal-body h4:first-child { margin-top: 0; }
+
+  .modal-body p {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    line-height: 1.75;
+    margin-bottom: 0.8rem;
+  }
+
+  .formula-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--accent3);
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+
+  .formula-box .comment {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  .example-box {
+    background: #0a1628;
+    border: 1px solid #1a3050;
+    padding: 1.2rem 1.5rem;
+    margin: 1rem 0;
+  }
+
+  .example-box .ex-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .example-box p { color: var(--text); font-size: 0.88rem; }
+
+  /* ── SVG DIAGRAMS ── */
+  .diagram-wrap {
+    margin: 1.5rem 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1rem;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  @keyframes flowLine {
+    from { stroke-dashoffset: 200; }
+    to   { stroke-dashoffset: 0; }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .flow-path {
+    stroke-dasharray: 8 4;
+    stroke-dashoffset: 0;
+    animation: flowLine 4s linear infinite;
+  }
+
+  .fan-blade {
+    transform-origin: 50% 50%;
+    animation: spin 2s linear infinite;
+  }
+
+  /* ── QUIZ ── */
+  .quiz-wrap {
+    margin-top: 1.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    padding: 1.3rem 1.5rem;
+  }
+
+  .quiz-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--accent3);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .quiz-question {
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .quiz-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    text-align: left;
+    width: 100%;
+    font-family: var(--body);
+  }
+
+  .quiz-opt:hover:not(:disabled) {
+    border-color: var(--accent3);
+    color: var(--text);
+  }
+
+  .quiz-opt .opt-key {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent3);
+    min-width: 1.2rem;
+    margin-top: 0.1rem;
+  }
+
+  .quiz-opt.correct {
+    border-color: #22c55e;
+    background: rgba(34,197,94,0.08);
+    color: #86efac;
+  }
+
+  .quiz-opt.wrong {
+    border-color: #ef4444;
+    background: rgba(239,68,68,0.08);
+    color: #fca5a5;
+  }
+
+  .quiz-opt.dimmed {
+    opacity: 0.45;
+  }
+
+  .quiz-opt:disabled { cursor: default; }
+
+  .quiz-feedback {
+    display: none;
+    padding: 0.8rem 1rem;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    border: 1px solid var(--border);
+    margin-top: 0.4rem;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.fb-correct {
+    border-color: #22c55e;
+    background: rgba(34,197,94,0.07);
+    color: #86efac;
+  }
+  .quiz-feedback.fb-wrong {
+    border-color: #ef4444;
+    background: rgba(239,68,68,0.07);
+    color: #fca5a5;
+  }
+
+  .quiz-feedback strong { color: inherit; }
+
+  .quiz-retry {
+    margin-top: 0.7rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .quiz-retry:hover { color: var(--accent3); border-color: var(--accent3); }
+
+  /* ── VECTOR CALCULATOR ── */
+  .calc-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .calc-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .calc-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .calc-field.full { grid-column: 1 / -1; }
+
+  .calc-field label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .calc-field input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    padding: 0.6rem 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+    width: 100%;
+  }
+  .calc-field input::-webkit-inner-spin-button,
+  .calc-field input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .calc-field input:focus { border-color: var(--accent2); }
+
+  .quad-btns {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+  }
+  .quad-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .quad-btn:hover, .quad-btn.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #fff;
+  }
+
+  .calc-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .res-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.8rem 1rem;
+    display: flex; flex-direction: column; gap: 0.2rem;
+  }
+
+  .res-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .res-val {
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--accent2);
+    transition: color 0.2s;
+  }
+
+  .calc-canvas-wrap {
+    display: flex;
+    justify-content: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+  }
+
+  #vec-canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .calc-formula-note {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-align: center;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 500px) {
+    .calc-inputs, .calc-results { grid-template-columns: 1fr; }
+    .calc-field.full { grid-column: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .modal-body, .modal-header { padding: 1.5rem; }
+    .hero-stats { gap: 1.5rem; }
+    .stat-val { font-size: 1.6rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+
+  <!-- Animated streamlines SVG background -->
+  <svg class="hero-lines" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="streamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#e8390e" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#f97c2e" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path class="flow-path" d="M-50,150 Q300,120 600,150 Q900,180 1250,150" stroke="url(#streamGrad)" stroke-width="1.5" fill="none"/>
+    <path class="flow-path" style="animation-delay:-0.6s" d="M-50,200 Q300,160 600,200 Q900,240 1250,200" stroke="url(#streamGrad)" stroke-width="1" fill="none"/>
+    <path class="flow-path" style="animation-delay:-1.2s" d="M-50,250 Q300,200 600,250 Q900,300 1250,250" stroke="url(#streamGrad)" stroke-width="1.5" fill="none"/>
+    <path class="flow-path" style="animation-delay:-1.8s" d="M-50,300 Q300,260 600,300 Q900,340 1250,300" stroke="url(#streamGrad)" stroke-width="1" fill="none"/>
+    <path class="flow-path" style="animation-delay:-2.4s" d="M-50,350 Q300,320 600,350 Q900,380 1250,350" stroke="url(#streamGrad)" stroke-width="1.5" fill="none"/>
+    <path class="flow-path" style="animation-delay:-3.0s" d="M-50,400 Q300,380 600,400 Q900,420 1250,400" stroke="url(#streamGrad)" stroke-width="1" fill="none"/>
+    <path class="flow-path" style="animation-delay:-0.3s" d="M-50,100 Q300,80 600,100 Q900,120 1250,100" stroke="#3b82f6" stroke-opacity="0.4" stroke-width="1" fill="none"/>
+    <path class="flow-path" style="animation-delay:-1.5s" d="M-50,450 Q300,440 600,450 Q900,460 1250,450" stroke="#3b82f6" stroke-opacity="0.4" stroke-width="1" fill="none"/>
+  </svg>
+
+  <div class="hero-label">Iaquaniello Matteo · Aerotecnica e Strutture Aeronautiche · Classe 3ACA</div>
+  <h1>Galleria del Vento<br><span>Pininfarina</span></h1>
+  <div class="hero-sub">Architettura & Fisica del Flusso — Infografica Interattiva</div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-val">1100 kW</div>
+      <div class="stat-label">Potenza Motrice</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">250 km/h</div>
+      <div class="stat-label">Velocità Massima</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">36 × 12 m</div>
+      <div class="stat-label">Dimensioni Struttura</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">50 g</div>
+      <div class="stat-label">Precisione Bilancia</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">5 m ⌀</div>
+      <div class="stat-label">Diametro Elica</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">Esplora le sezioni</div>
+</section>
+
+<!-- ══════════════════ TUNNEL DIAGRAM ══════════════════ -->
+<section class="tunnel-section">
+  <div class="section-label">Schema Architetturale</div>
+  <h2 class="section-title">Circuito Chiuso Tipo Göttingen</h2>
+  <div class="tunnel-wrapper">
+    <svg viewBox="0 0 900 280" style="width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="tunnelGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#0d1f35"/>
+          <stop offset="100%" stop-color="#07131f"/>
+        </linearGradient>
+        <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+          <stop offset="40%" stop-color="#f97c2e" stop-opacity="0.8"/>
+          <stop offset="60%" stop-color="#e8390e" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.3"/>
+        </linearGradient>
+        <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#f97c2e"/>
+        </marker>
+      </defs>
+
+      <!-- Background -->
+      <rect width="900" height="280" fill="#07090f"/>
+
+      <!-- === TUNNEL BODY === -->
+      <!-- Camera di calma (settlement chamber) - wide left -->
+      <path d="M40,40 L40,240 L160,240 L160,40 Z" fill="url(#tunnelGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+      <!-- Honeycomb pattern -->
+      <g fill="none" stroke="#1e3a5f" stroke-width="0.8" opacity="0.7">
+        <line x1="80" y1="40" x2="80" y2="240"/>
+        <line x1="120" y1="40" x2="120" y2="240"/>
+        <line x1="40" y1="90" x2="160" y2="90"/>
+        <line x1="40" y1="140" x2="160" y2="140"/>
+        <line x1="40" y1="190" x2="160" y2="190"/>
+      </g>
+
+      <!-- Convergent section -->
+      <path d="M160,40 L160,240 L340,160 L340,120 Z" fill="url(#tunnelGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+
+      <!-- Test section (camera di prova) - highlighted -->
+      <path d="M340,120 L340,160 L560,160 L560,120 Z" fill="#0a1628" stroke="#3b82f6" stroke-width="2"/>
+      <rect x="340" y="120" width="220" height="40" fill="#0d2040" rx="0"/>
+
+      <!-- Moving ground belt -->
+      <rect x="340" y="155" width="220" height="8" fill="#1a3050" stroke="#3b82f6" stroke-width="1"/>
+      <line x1="340" y1="158" x2="560" y2="158" stroke="#3b82f6" stroke-width="0.5" stroke-dasharray="6,3"/>
+
+      <!-- Divergent section -->
+      <path d="M560,120 L560,160 L740,240 L740,40 Z" fill="url(#tunnelGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+
+      <!-- Fan/motor section - right -->
+      <rect x="740" y="40" width="120" height="200" fill="url(#tunnelGrad)" stroke="#1e3a5f" stroke-width="1.5"/>
+      <!-- Fan blades -->
+      <g class="fan-blade" style="transform-origin: 800px 140px">
+        <ellipse cx="800" cy="140" rx="6" ry="45" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5" transform="rotate(0, 800, 140)"/>
+        <ellipse cx="800" cy="140" rx="6" ry="45" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5" transform="rotate(45, 800, 140)"/>
+        <ellipse cx="800" cy="140" rx="6" ry="45" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5" transform="rotate(90, 800, 140)"/>
+        <ellipse cx="800" cy="140" rx="6" ry="45" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5" transform="rotate(135, 800, 140)"/>
+      </g>
+      <circle cx="800" cy="140" r="10" fill="#0d1117" stroke="#3b82f6" stroke-width="2"/>
+
+      <!-- STREAMLINES in convergent+test+divergent -->
+      <g stroke-width="1.2" fill="none">
+        <!-- upper stream -->
+        <path class="flow-path" style="animation-delay:0s" d="M40,70 Q100,70 160,80 Q240,95 340,122 L560,122 Q660,130 740,80 Q780,60 800,60" stroke="#f97c2e" stroke-opacity="0.5"/>
+        <!-- mid-upper -->
+        <path class="flow-path" style="animation-delay:-0.5s" d="M40,100 Q100,100 160,107 Q240,117 340,128 L560,128 Q660,135 740,110 Q780,100 800,100" stroke="#f97c2e" stroke-opacity="0.7"/>
+        <!-- center -->
+        <path class="flow-path" style="animation-delay:-1s" d="M40,140 L160,140 Q240,140 340,140 L560,140 Q660,140 740,140 L800,140" stroke="#e8390e" stroke-opacity="0.9"/>
+        <!-- mid-lower -->
+        <path class="flow-path" style="animation-delay:-1.5s" d="M40,180 Q100,180 160,173 Q240,163 340,152 L560,152 Q660,145 740,170 Q780,180 800,180" stroke="#f97c2e" stroke-opacity="0.7"/>
+        <!-- lower -->
+        <path class="flow-path" style="animation-delay:-2s" d="M40,210 Q100,210 160,200 Q240,185 340,158 L560,158 Q660,150 740,200 Q780,215 800,215" stroke="#f97c2e" stroke-opacity="0.5"/>
+      </g>
+
+      <!-- Car silhouette in test section -->
+      <g transform="translate(410,135)" opacity="0.9">
+        <!-- Body -->
+        <ellipse cx="70" cy="16" rx="55" ry="10" fill="#e8390e" opacity="0.8"/>
+        <path d="M30,16 Q40,6 60,4 Q80,2 100,6 L110,16 Z" fill="#e8390e"/>
+        <!-- Windows -->
+        <path d="M50,12 Q58,7 70,6 Q82,5 90,10 L88,13 L50,13 Z" fill="#1e3a5f"/>
+        <!-- Wheels -->
+        <circle cx="42" cy="22" r="7" fill="#1a1a1a" stroke="#555" stroke-width="1.5"/>
+        <circle cx="98" cy="22" r="7" fill="#1a1a1a" stroke="#555" stroke-width="1.5"/>
+      </g>
+
+      <!-- === LABELS === -->
+      <text x="100" y="258" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#7a9ab8" letter-spacing="0.5">CAMERA DI CALMA</text>
+      <text x="100" y="270" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#7a9ab8" letter-spacing="0.5">& NIDO D'APE</text>
+
+      <text x="250" y="258" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#7a9ab8" letter-spacing="0.5">CONVERGENTE</text>
+
+      <text x="450" y="114" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#3b82f6" letter-spacing="0.5">CAMERA DI PROVA</text>
+      <text x="450" y="175" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="7" fill="#3b82f6" letter-spacing="0.3">TAPPETO MOBILE</text>
+
+      <text x="650" y="258" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#7a9ab8" letter-spacing="0.5">DIFFUSORE</text>
+      <text x="650" y="270" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#7a9ab8" letter-spacing="0.5">DIVERGENTE</text>
+
+      <text x="800" y="258" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" fill="#7a9ab8" letter-spacing="0.5">VENTILATORE</text>
+      <text x="800" y="270" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="7" fill="#7a9ab8" letter-spacing="0.3">1100 kW</text>
+
+      <!-- Velocity annotations -->
+      <text x="250" y="30" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#f97c2e">V↑ · p↓</text>
+      <text x="450" y="30" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#e8390e">V_max = 250 km/h</text>
+      <text x="650" y="30" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" fill="#f97c2e">V↓ · p↑</text>
+
+      <!-- Bernoulli line -->
+      <line x1="200" y1="22" x2="700" y2="22" stroke="#1e3a5f" stroke-width="0.5" stroke-dasharray="3,3"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════ CARDS ══════════════════ -->
+<section class="cards-section">
+  <div class="section-label">Componenti & Fisica</div>
+  <h2 class="section-title">Clicca per Approfondire</h2>
+
+  <div class="cards-grid">
+
+    <!-- CARD 1 -->
+    <div class="card" data-color="blue" data-modal="modal-calma" tabindex="0">
+      <div class="card-num">01 / 06</div>
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="8" width="16" height="32" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+          <line x1="8" y1="8" x2="8" y2="40" stroke="#1e3a5f" stroke-width="1"/>
+          <line x1="12" y1="8" x2="12" y2="40" stroke="#1e3a5f" stroke-width="1"/>
+          <line x1="16" y1="8" x2="16" y2="40" stroke="#1e3a5f" stroke-width="1"/>
+          <line x1="4" y1="16" x2="20" y2="16" stroke="#1e3a5f" stroke-width="1"/>
+          <line x1="4" y1="24" x2="20" y2="24" stroke="#1e3a5f" stroke-width="1"/>
+          <line x1="4" y1="32" x2="20" y2="32" stroke="#1e3a5f" stroke-width="1"/>
+          <path d="M20,12 L44,18 M20,24 L44,24 M20,36 L44,30" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <path class="flow-path" style="animation-delay:0s" d="M20,18 L44,18" stroke="#3b82f6" stroke-width="1.2"/>
+          <path class="flow-path" style="animation-delay:-1s" d="M20,24 L44,24" stroke="#3b82f6" stroke-width="1.2"/>
+          <path class="flow-path" style="animation-delay:-2s" d="M20,30 L44,30" stroke="#3b82f6" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h3>Camera di Calma & Nido d'Ape</h3>
+      <p>Il filtro raddrizzatore che garantisce la perfetta laminarità del flusso prima del convergente.</p>
+      <div class="card-cta">Approfondisci</div>
+    </div>
+
+    <!-- CARD 2 -->
+    <div class="card" data-color="orange" data-modal="modal-convergente" tabindex="0">
+      <div class="card-num">02 / 06</div>
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <path d="M4,8 L4,40 L28,34 L28,14 Z" fill="#0a1628" stroke="#f97c2e" stroke-width="1.5"/>
+          <path class="flow-path" style="animation-delay:0s" d="M4,16 L28,18" stroke="#f97c2e" stroke-width="1"/>
+          <path class="flow-path" style="animation-delay:-0.7s" d="M4,24 L28,24" stroke="#f97c2e" stroke-width="1.5"/>
+          <path class="flow-path" style="animation-delay:-1.4s" d="M4,32 L28,30" stroke="#f97c2e" stroke-width="1"/>
+          <text x="32" y="22" font-family="monospace" font-size="8" fill="#f97c2e">A↓</text>
+          <text x="32" y="32" font-family="monospace" font-size="8" fill="#f97c2e">V↑</text>
+        </svg>
+      </div>
+      <h3>Condotto Convergente</h3>
+      <p>Accelerazione del flusso tramite l'equazione di continuità: sezione ridotta, velocità aumenta.</p>
+      <div class="card-cta">Approfondisci</div>
+    </div>
+
+    <!-- CARD 3 -->
+    <div class="card" data-color="red" data-modal="modal-prova" tabindex="0">
+      <div class="card-num">03 / 06</div>
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="16" width="40" height="20" fill="#0a1628" stroke="#e8390e" stroke-width="1.5"/>
+          <!-- car -->
+          <path d="M12,30 Q14,25 18,24 Q22,23 26,24 Q30,25 32,30" fill="#e8390e" opacity="0.7"/>
+          <circle cx="15" cy="31" r="3" fill="#111" stroke="#555" stroke-width="1"/>
+          <circle cx="29" cy="31" r="3" fill="#111" stroke="#555" stroke-width="1"/>
+          <!-- ground belt -->
+          <rect x="4" y="33" width="40" height="3" fill="#1e3a5f" stroke="#3b82f6" stroke-width="0.8"/>
+          <!-- flow arrows -->
+          <path class="flow-path" style="animation-delay:0s" d="M4,19 L44,19" stroke="#e8390e" stroke-width="1"/>
+          <path class="flow-path" style="animation-delay:-1s" d="M4,22 L44,22" stroke="#e8390e" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h3>Camera di Prova & Tappeto Mobile</h3>
+      <p>Il cuore della galleria: Ground Effect simulation con tappeto mobile sincronizzato al flusso.</p>
+      <div class="card-cta">Approfondisci</div>
+    </div>
+
+    <!-- CARD 4 -->
+    <div class="card" data-color="teal" data-modal="modal-diffusore" tabindex="0">
+      <div class="card-num">04 / 06</div>
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <path d="M4,14 L4,34 L44,40 L44,8 Z" fill="#0a1628" stroke="#0ea5a8" stroke-width="1.5"/>
+          <path class="flow-path" style="animation-delay:0s" d="M4,18 L44,10" stroke="#0ea5a8" stroke-width="1"/>
+          <path class="flow-path" style="animation-delay:-0.8s" d="M4,24 L44,24" stroke="#0ea5a8" stroke-width="1.5"/>
+          <path class="flow-path" style="animation-delay:-1.6s" d="M4,30 L44,38" stroke="#0ea5a8" stroke-width="1"/>
+          <text x="28" y="22" font-family="monospace" font-size="7" fill="#0ea5a8">A↑</text>
+          <text x="28" y="32" font-family="monospace" font-size="7" fill="#0ea5a8">V↓ p↑</text>
+        </svg>
+      </div>
+      <h3>Diffusore Divergente</h3>
+      <p>Recupero di pressione statica secondo Bernoulli: sezione aumenta, velocità diminuisce, pressione sale.</p>
+      <div class="card-cta">Approfondisci</div>
+    </div>
+
+    <!-- CARD 5 -->
+    <div class="card" data-color="yellow" data-modal="modal-reynolds" tabindex="0">
+      <div class="card-num">05 / 06</div>
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="18" fill="none" stroke="#ffc53d" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <text x="24" y="20" text-anchor="middle" font-family="monospace" font-size="10" fill="#ffc53d" font-weight="bold">Re</text>
+          <text x="24" y="32" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a9ab8">= ρVL/μ</text>
+        </svg>
+      </div>
+      <h3>Similitudine Aerodinamica & Reynolds</h3>
+      <p>Il numero di Reynolds governa la transizione laminare-turbolenta e la validità dei test in scala.</p>
+      <div class="card-cta">Approfondisci</div>
+    </div>
+
+    <!-- CARD 6 -->
+    <div class="card" data-color="orange" data-modal="modal-applicazioni" tabindex="0">
+      <div class="card-num">06 / 06</div>
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <!-- Car -->
+          <path d="M4,30 Q6,24 12,22 Q20,20 28,22 Q36,24 40,30 L40,34 L4,34 Z" fill="none" stroke="#f97c2e" stroke-width="1.5"/>
+          <!-- Bicycle -->
+          <circle cx="10" cy="40" r="3" fill="none" stroke="#ffc53d" stroke-width="1"/>
+          <circle cx="22" cy="40" r="3" fill="none" stroke="#ffc53d" stroke-width="1"/>
+          <!-- Bridge pillar -->
+          <rect x="34" y="28" width="4" height="12" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+          <path d="M32,28 Q36,22 40,28" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+          <!-- Ski figure -->
+          <circle cx="10" cy="18" r="3" fill="none" stroke="#0ea5a8" stroke-width="1.2"/>
+          <line x1="10" y1="21" x2="8" y2="28" stroke="#0ea5a8" stroke-width="1.2"/>
+          <line x1="10" y1="21" x2="14" y2="26" stroke="#0ea5a8" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h3>Applicazioni Multidisciplinari</h3>
+      <p>Ferrari Testarossa, ciclismo olimpico, sci alpino e infrastrutture civili: la galleria al servizio di tutti.</p>
+      <div class="card-cta">Approfondisci</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════ MODALS ══════════════════ -->
+
+<!-- MODAL 1: Camera di Calma -->
+<div class="modal-overlay" id="modal-calma">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="--accent-line: #3b82f6">
+      <div class="modal-tag">01 / 06 — Upstream Conditioning</div>
+      <h2 class="modal-title">Camera di Calma<br>& Nido d'Ape</h2>
+      <button class="modal-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>Definizione</h4>
+      <p>La <strong>Camera di Calma</strong> (Settlement Chamber) è la grande sezione a monte del convergente. Il suo ruolo è eliminare le perturbazioni macroscopiche e ridurre l'intensità di turbolenza del flusso prima che entri nel convergente. Il <strong>Nido d'Ape</strong> (Honeycomb) è una struttura a celle esagonali in alluminio o fibra di carbonio inserita nella camera di calma.</p>
+
+      <h4>Fisica del Flusso Laminare</h4>
+      <p>Un flusso è detto <em>laminare</em> quando le particelle fluide si muovono in strati paralleli senza mescolamento tra strati adiacenti (numero di Reynolds sotto il valore critico). L'intensità di turbolenza <em>Tu</em> è definita come:</p>
+      <div class="formula-box">
+        Tu = u' / U∞ × 100%
+        <br><span class="comment">  dove u' = velocità fluttuante RMS, U∞ = velocità media</span>
+        <br><br>
+        Per la galleria Pininfarina:  Tu &lt; 0.5% in camera di prova
+      </div>
+      <p>Il nido d'ape raddrizza i filetti fluidi orientandoli parallelamente all'asse longitudinale e sopprime i vortici trasversali. Le reti a maglia fine (screens) poste a valle riducono ulteriormente le non-uniformità di velocità.</p>
+
+      <h4>Diagramma della Sezione</h4>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 460 180" style="width:100%;height:auto">
+          <rect width="460" height="180" fill="#07090f"/>
+          <!-- Honeycomb cells -->
+          <g fill="#0d1f35" stroke="#3b82f6" stroke-width="0.8" opacity="0.9">
+            <polygon points="30,30 50,20 70,30 70,50 50,60 30,50"/>
+            <polygon points="70,30 90,20 110,30 110,50 90,60 70,50"/>
+            <polygon points="110,30 130,20 150,30 150,50 130,60 110,50"/>
+            <polygon points="30,70 50,60 70,70 70,90 50,100 30,90"/>
+            <polygon points="70,70 90,60 110,70 110,90 90,100 70,90"/>
+            <polygon points="110,70 130,60 150,70 150,90 130,100 110,90"/>
+            <polygon points="30,110 50,100 70,110 70,130 50,140 30,130"/>
+            <polygon points="70,110 90,100 110,110 110,130 90,140 70,130"/>
+            <polygon points="110,110 130,100 150,110 150,130 130,140 110,130"/>
+            <polygon points="30,150 50,140 70,150 70,170 50,180 30,170"/>
+            <polygon points="70,150 90,140 110,150 110,170 90,180 70,170"/>
+            <polygon points="110,150 130,140 150,150 150,170 130,180 110,170"/>
+          </g>
+          <!-- Chaotic flow in -->
+          <g stroke="#f97c2e" stroke-width="1.2" fill="none" opacity="0.6">
+            <path d="M5,40 Q15,35 25,45 Q35,55 25,55"/>
+            <path d="M5,80 Q10,70 20,85 Q30,95 25,90"/>
+            <path d="M5,120 Q18,115 12,130 Q8,140 22,135"/>
+            <path d="M5,155 Q15,150 10,165 Q5,175 20,170"/>
+          </g>
+          <!-- Ordered flow out -->
+          <g class="flow-path" stroke="#3b82f6" stroke-width="1.5" fill="none">
+            <line x1="155" y1="40" x2="460" y2="40"/>
+            <line x1="155" y1="70" x2="460" y2="70"/>
+            <line x1="155" y1="100" x2="460" y2="100"/>
+            <line x1="155" y1="130" x2="460" y2="130"/>
+            <line x1="155" y1="160" x2="460" y2="160"/>
+          </g>
+          <!-- Labels -->
+          <text x="75" y="195" text-anchor="middle" font-family="monospace" font-size="9" fill="#7a9ab8">NIDO D'APE</text>
+          <text x="300" y="18" text-anchor="middle" font-family="monospace" font-size="9" fill="#3b82f6">FLUSSO LAMINARE ORDINATO</text>
+          <text x="15" y="15" font-family="monospace" font-size="8" fill="#f97c2e">TURB.</text>
+        </svg>
+      </div>
+
+      <h4>Esempio Pratico — Costruzioni Aeronautiche</h4>
+      <div class="example-box">
+        <div class="ex-label">Applicazione aeronautica</div>
+        <p>Nel test di una fusoliera in scala 1:5, la qualità del flusso è critica: anche una turbolenza del 2% falsa le misure di attrito superficiale (Cd_friction) fino al 15%. La galleria Pininfarina, con Tu &lt; 0.5%, è adatta alla calibrazione di profili aerodinamici (NACA) per ala e impennaggi. Senza il nido d'ape, i vortici da angolo nelle condotte del circuito chiuso si trasmetterebbero in camera di prova, rendendo i risultati non ripetibili.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- QUIZ -->
+      <div class="quiz-wrap" id="quiz-q1">
+        <div class="quiz-label">✦ Mini Quiz — Metti alla prova le tue conoscenze</div>
+        <div class="quiz-question">Nella Camera di Calma, se l'intensità di turbolenza Tu è pari al 3%, il flusso in camera di prova sarà:</div>
+        <div class="quiz-options">
+      <button class="quiz-opt" data-qid="q1" data-idx="0">
+        <span class="opt-key">A</span>Perfettamente laminare, adatto a misure precise
+      </button>
+      <button class="quiz-opt" data-qid="q1" data-idx="1">
+        <span class="opt-key">B</span>Disturbato: Tu > 0.5% compromette la qualità delle misure
+      </button>
+      <button class="quiz-opt" data-qid="q1" data-idx="2">
+        <span class="opt-key">C</span>Accettabile solo se la velocità supera 200 km/h
+      </button>
+      <button class="quiz-opt" data-qid="q1" data-idx="3">
+        <span class="opt-key">D</span>Irrilevante per i test su modelli in scala reale
+      </button>
+        </div>
+        <div class="quiz-feedback" id="fb-q1"></div>
+        <button class="quiz-retry" id="retry-q1" style="display:none">↺ Riprova</button>
+      </div>
+
+      <div class="quiz-wrap" id="quiz-q1">
+        <div class="quiz-label">✦ Mini Quiz</div>
+        <div class="quiz-question">Nella Camera di Calma, se l'intensità di turbolenza Tu è pari al 3%, il flusso in camera di prova sarà:</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-qid="q1" data-idx="0"><span class="opt-key">A</span>Perfettamente laminare, adatto a misure precise</button>
+          <button class="quiz-opt" data-qid="q1" data-idx="1"><span class="opt-key">B</span>Disturbato: Tu > 0.5% compromette la qualità delle misure</button>
+          <button class="quiz-opt" data-qid="q1" data-idx="2"><span class="opt-key">C</span>Accettabile solo se la velocità supera 200 km/h</button>
+          <button class="quiz-opt" data-qid="q1" data-idx="3"><span class="opt-key">D</span>Irrilevante per i test su modelli in scala reale</button>
+        </div>
+        <div class="quiz-feedback" id="fb-q1"></div>
+        <button class="quiz-retry" id="retry-q1" style="display:none">↺ Riprova</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: Convergente -->
+
+<div class="modal-overlay" id="modal-convergente">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="--accent-line: #f97c2e">
+      <div class="modal-tag">02 / 06 — Fluid Mechanics</div>
+      <h2 class="modal-title">Condotto<br>Convergente</h2>
+      <button class="modal-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>Equazione di Continuità</h4>
+      <p>In un condotto a flusso stazionario incomprimibile (Mach ≪ 1), la portata volumetrica Q si conserva. Per una sezione trasversale variabile:</p>
+      <div class="formula-box">
+        Q = A₁ · V₁ = A₂ · V₂ = costante
+        <br><br>
+        ⟹  V₂ = V₁ · (A₁ / A₂)
+        <br><span class="comment">  Se A₂ &lt; A₁  ⟹  V₂ &gt; V₁  (accelerazione)</span>
+      </div>
+      <p>Nella galleria Pininfarina il rapporto di contrazione (contraction ratio CR = A_ingresso / A_prova) è tipicamente CR ≈ 4–9. Un CR elevato riduce la non-uniformità della velocità in camera di prova e abbassa l'intensità di turbolenza.</p>
+
+      <h4>Profilo di Velocità nel Convergente</h4>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 460 160" style="width:100%;height:auto">
+          <rect width="460" height="160" fill="#07090f"/>
+          <!-- convergent shape -->
+          <path d="M20,20 L20,140 L340,110 L340,50 Z" fill="#0a1628" stroke="#f97c2e" stroke-width="1.5"/>
+          <!-- velocity profiles (vertical bars) -->
+          <!-- at inlet -->
+          <line x1="20" y1="80" x2="60" y2="80" stroke="#f97c2e" stroke-width="2"/>
+          <polygon points="60,76 70,80 60,84" fill="#f97c2e"/>
+          <!-- mid -->
+          <line x1="180" y1="80" x2="230" y2="80" stroke="#f97c2e" stroke-width="2"/>
+          <polygon points="230,76 240,80 230,84" fill="#f97c2e"/>
+          <!-- at exit -->
+          <line x1="340" y1="80" x2="420" y2="80" stroke="#e8390e" stroke-width="3"/>
+          <polygon points="420,74 435,80 420,86" fill="#e8390e"/>
+          <!-- area labels -->
+          <text x="20" y="15" font-family="monospace" font-size="9" fill="#7a9ab8">A₁ (grande)</text>
+          <text x="320" y="46" font-family="monospace" font-size="9" fill="#7a9ab8">A₂ (piccola)</text>
+          <text x="50" y="155" font-family="monospace" font-size="9" fill="#f97c2e">V₁</text>
+          <text x="420" y="155" font-family="monospace" font-size="9" fill="#e8390e">V₂ ≫ V₁</text>
+          <!-- streamlines -->
+          <path class="flow-path" style="animation-delay:0s" d="M20,35 Q180,45 340,52" stroke="#f97c2e" stroke-width="0.8" fill="none" stroke-opacity="0.5"/>
+          <path class="flow-path" style="animation-delay:-0.7s" d="M20,80 L340,80" stroke="#e8390e" stroke-width="1" fill="none"/>
+          <path class="flow-path" style="animation-delay:-1.4s" d="M20,125 Q180,115 340,108" stroke="#f97c2e" stroke-width="0.8" fill="none" stroke-opacity="0.5"/>
+        </svg>
+      </div>
+
+      <h4>Effetto di Bernoulli nel Convergente</h4>
+      <p>L'equazione di Bernoulli per flusso incomprimibile stazionario lungo una linea di flusso:</p>
+      <div class="formula-box">
+        p₁ + ½ρV₁² + ρgz₁ = p₂ + ½ρV₂²  + ρgz₂
+        <br><span class="comment">  (trascurando le differenze di quota: z₁ ≈ z₂)</span>
+        <br><br>
+        Δp = p₁ - p₂ = ½ρ(V₂² - V₁²)  &gt; 0
+        <br><span class="comment">  Il flusso accelera ⟹ la pressione statica diminuisce</span>
+      </div>
+
+      <h4>Esempio Pratico — Costruzioni Aeronautiche</h4>
+      <div class="example-box">
+        <div class="ex-label">Applicazione aeronautica</div>
+        <p>Il principio del convergente è identico a quello dell'ugello di un motore a reazione: la sezione si restringe per accelerare il gas e convertire entalpia in energia cinetica. In una galleria del vento con CR = 6 e V₁ = 15 m/s, si ottiene V₂ = 90 m/s. Dalla continuità: A₁ · 15 = A₂ · 90 ⟹ A₁/A₂ = 6. Ciò corrisponde a una riduzione della sezione trasversale del 83.3%.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- QUIZ -->
+      <div class="quiz-wrap" id="quiz-q2">
+        <div class="quiz-label">✦ Mini Quiz — Metti alla prova le tue conoscenze</div>
+        <div class="quiz-question">In un condotto convergente la sezione si riduce da A₁ = 12 m² a A₂ = 2 m². Se la velocità iniziale è V₁ = 20 m/s, qual è V₂?</div>
+        <div class="quiz-options">
+      <button class="quiz-opt" data-qid="q2" data-idx="0">
+        <span class="opt-key">A</span>V₂ = 20 m/s (rimane invariata)
+      </button>
+      <button class="quiz-opt" data-qid="q2" data-idx="1">
+        <span class="opt-key">B</span>V₂ = 40 m/s
+      </button>
+      <button class="quiz-opt" data-qid="q2" data-idx="2">
+        <span class="opt-key">C</span>V₂ = 120 m/s
+      </button>
+      <button class="quiz-opt" data-qid="q2" data-idx="3">
+        <span class="opt-key">D</span>V₂ = 3.3 m/s
+      </button>
+        </div>
+        <div class="quiz-feedback" id="fb-q2"></div>
+        <button class="quiz-retry" id="retry-q2" style="display:none">↺ Riprova</button>
+      </div>
+
+      <div class="quiz-wrap" id="quiz-q2">
+        <div class="quiz-label">✦ Mini Quiz</div>
+        <div class="quiz-question">In un condotto convergente la sezione si riduce da A₁ = 12 m² a A₂ = 2 m². Se V₁ = 20 m/s, qual è V₂?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-qid="q2" data-idx="0"><span class="opt-key">A</span>V₂ = 20 m/s (rimane invariata)</button>
+          <button class="quiz-opt" data-qid="q2" data-idx="1"><span class="opt-key">B</span>V₂ = 40 m/s</button>
+          <button class="quiz-opt" data-qid="q2" data-idx="2"><span class="opt-key">C</span>V₂ = 120 m/s</button>
+          <button class="quiz-opt" data-qid="q2" data-idx="3"><span class="opt-key">D</span>V₂ = 3.3 m/s</button>
+        </div>
+        <div class="quiz-feedback" id="fb-q2"></div>
+        <button class="quiz-retry" id="retry-q2" style="display:none">↺ Riprova</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: Camera di Prova -->
+
+<div class="modal-overlay" id="modal-prova">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="--accent-line: #e8390e">
+      <div class="modal-tag">03 / 06 — Test Section</div>
+      <h2 class="modal-title">Camera di Prova<br>& Tappeto Mobile</h2>
+      <button class="modal-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>La Camera di Prova (Test Section)</h4>
+      <p>È la sezione a sezione trasversale costante (o lievemente divergente per compensare lo spessore dello strato limite sulle pareti) dove viene alloggiato il modello. Nella galleria Pininfarina ha dimensioni sufficienti a ospitare vetture a scala reale 1:1. Le pareti possono essere trasparenti per permettere la visualizzazione ottica dei flussi (PIV, schlieren).</p>
+
+      <h4>Ground Effect & Strato Limite a Terra</h4>
+      <p>In una prova statica tradizionale (suolo fisso), si forma uno strato limite sulla pavimentazione che cresce spessore lungo la camera. Questo strato non esiste su un veicolo reale in moto su strada, falsando la distribuzione di pressione nelle zone basse della vettura e il carico aerodinamico sugli eventuali estrattori/diffusori.</p>
+
+      <h4>Il Tappeto Mobile (Moving Ground)</h4>
+      <div class="formula-box">
+        Condizione di no-slip reale:  V_suolo = V_aria = V_test
+        <br><br>
+        Se V_nastro ≠ V_aria:  δ_falso (strato limite artificiale)
+        <br>Se V_nastro = V_aria:  simulazione autentica del suolo in moto
+      </div>
+      <p>Il tappeto mobile è un nastro trasportatore ad alta velocità che scorre sotto il modello alla stessa velocità del flusso d'aria. In questo modo la condizione al contorno a terra replica esattamente quella reale (suolo che scorre sotto la vettura alla velocità V).</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 460 200" style="width:100%;height:auto">
+          <rect width="460" height="200" fill="#07090f"/>
+          <!-- Test section box -->
+          <rect x="20" y="20" width="420" height="150" fill="#0a1628" stroke="#e8390e" stroke-width="1.5"/>
+          <!-- Car body (side view) -->
+          <g transform="translate(100, 80)">
+            <path d="M0,50 Q10,30 30,20 Q80,10 140,20 Q165,28 180,50 L180,55 L0,55 Z" fill="#e8390e" opacity="0.85"/>
+            <path d="M40,20 Q55,5 80,2 Q110,-2 140,8 L135,20 L40,20 Z" fill="#1e3a5f"/>
+            <!-- wheels -->
+            <circle cx="30" cy="55" r="14" fill="#111" stroke="#555" stroke-width="2"/>
+            <circle cx="150" cy="55" r="14" fill="#111" stroke="#555" stroke-width="2"/>
+          </g>
+          <!-- Airflow arrows -->
+          <g class="flow-path">
+            <path d="M20,40 L100,40" stroke="#e8390e" stroke-width="1.5" fill="none"/>
+            <path d="M20,60 L100,60" stroke="#e8390e" stroke-width="1.5" fill="none"/>
+            <path d="M280,40 L440,40" stroke="#e8390e" stroke-width="1.5" fill="none"/>
+            <path d="M280,60 L440,60" stroke="#e8390e" stroke-width="1.5" fill="none"/>
+          </g>
+          <!-- Moving ground belt -->
+          <rect x="20" y="155" width="420" height="12" fill="#1a3050" stroke="#3b82f6" stroke-width="1.5"/>
+          <g stroke-dasharray="6,4" stroke="#3b82f6" stroke-width="0.8">
+            <line x1="20" y1="161" x2="440" y2="161" class="flow-path"/>
+          </g>
+          <!-- Labels -->
+          <text x="230" y="175" text-anchor="middle" font-family="monospace" font-size="9" fill="#3b82f6">TAPPETO MOBILE → V_nastro = V_aria</text>
+          <!-- BL comparison -->
+          <path d="M20,153 Q60,145 80,130 Q100,115 120,105" stroke="#ffc53d" stroke-width="1" stroke-dasharray="3,2" fill="none"/>
+          <text x="125" y="102" font-family="monospace" font-size="7" fill="#ffc53d">δ strato limite</text>
+          <text x="125" y="112" font-family="monospace" font-size="7" fill="#ffc53d">(solo su suolo fisso)</text>
+        </svg>
+      </div>
+
+      <h4>Esempio Pratico — Ferrari Testarossa</h4>
+      <div class="example-box">
+        <div class="ex-label">Test storico</div>
+        <p>La Ferrari Testarossa è stata testata nella galleria Pininfarina con tappeto mobile attivo. La differenza di carico aerodinamico sull'anteriore tra prova con suolo fisso e tappeto mobile può raggiungere il 20–30% sul coefficiente Cl (lift). Senza il tappeto, il design degli splitter anteriori e dei canali di raffreddamento sotto la scocca risulterebbe ottimizzato per condizioni irreali, compromettendo la stabilità ad alta velocità su pista.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- QUIZ -->
+      <div class="quiz-wrap" id="quiz-q3">
+        <div class="quiz-label">✦ Mini Quiz — Metti alla prova le tue conoscenze</div>
+        <div class="quiz-question">Perché la galleria Pininfarina utilizza un tappeto mobile (moving ground) sotto il modello?</div>
+        <div class="quiz-options">
+      <button class="quiz-opt" data-qid="q3" data-idx="0">
+        <span class="opt-key">A</span>Per aumentare la velocità del flusso in camera di prova
+      </button>
+      <button class="quiz-opt" data-qid="q3" data-idx="1">
+        <span class="opt-key">B</span>Per eliminare lo strato limite artificiale che si formerebbe su un suolo fisso
+      </button>
+      <button class="quiz-opt" data-qid="q3" data-idx="2">
+        <span class="opt-key">C</span>Per misurare il coefficiente di Reynolds più accuratamente
+      </button>
+      <button class="quiz-opt" data-qid="q3" data-idx="3">
+        <span class="opt-key">D</span>Per raffreddare le ruote del modello durante i test
+      </button>
+        </div>
+        <div class="quiz-feedback" id="fb-q3"></div>
+        <button class="quiz-retry" id="retry-q3" style="display:none">↺ Riprova</button>
+      </div>
+
+      <div class="quiz-wrap" id="quiz-q3">
+        <div class="quiz-label">✦ Mini Quiz</div>
+        <div class="quiz-question">Perché la galleria Pininfarina usa un tappeto mobile (moving ground) sotto il modello?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-qid="q3" data-idx="0"><span class="opt-key">A</span>Per aumentare la velocità del flusso in camera di prova</button>
+          <button class="quiz-opt" data-qid="q3" data-idx="1"><span class="opt-key">B</span>Per eliminare lo strato limite artificiale che si formerebbe su un suolo fisso</button>
+          <button class="quiz-opt" data-qid="q3" data-idx="2"><span class="opt-key">C</span>Per misurare il coefficiente di Reynolds più accuratamente</button>
+          <button class="quiz-opt" data-qid="q3" data-idx="3"><span class="opt-key">D</span>Per raffreddare le ruote del modello durante i test</button>
+        </div>
+        <div class="quiz-feedback" id="fb-q3"></div>
+        <button class="quiz-retry" id="retry-q3" style="display:none">↺ Riprova</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 4: Diffusore -->
+
+<div class="modal-overlay" id="modal-diffusore">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="--accent-line: #0ea5a8">
+      <div class="modal-tag">04 / 06 — Pressure Recovery</div>
+      <h2 class="modal-title">Diffusore<br>Divergente</h2>
+      <button class="modal-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>Principio di Bernoulli — Recupero di Pressione</h4>
+      <p>Nel diffusore, la sezione trasversale <em>aumenta</em> progressivamente. Per la conservazione della massa, la velocità diminuisce. Dalla relazione di Bernoulli (per flusso ideale incomprimibile):</p>
+      <div class="formula-box">
+        p + ½ρV² = costante  (lungo la linea di flusso)
+        <br><br>
+        V₂ &lt; V₁  ⟹  p₂ &gt; p₁   (recupero di pressione statica)
+        <br><br>
+        Efficienza diffusore:  η_d = Δp_reale / Δp_ideale
+        <br><span class="comment">  Tipicamente η_d = 0.7–0.9 (perdite per attrito e separazione)</span>
+      </div>
+
+      <h4>Angolo di Apertura Critico</h4>
+      <p>Se l'angolo di semiapertura θ del diffusore supera ~7–10°, il gradiente di pressione avverso diventa troppo elevato e lo strato limite separa dalla parete (stall del diffusore), causando flusso altamente irregolare e perdite elevate.</p>
+      <div class="formula-box">
+        Condizione di non-separazione:  θ ≤ θ_critico ≈ 7°–10°
+        <br><br>
+        Rapporto di area:  AR = A_uscita / A_ingresso
+        <br>Lunghezza necessaria:  L = (√AR - 1) · D_idraulico / (2 tan θ)
+      </div>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 460 160" style="width:100%;height:auto">
+          <rect width="460" height="160" fill="#07090f"/>
+          <!-- diffuser shape -->
+          <path d="M20,50 L20,110 L420,130 L420,30 Z" fill="#0a1628" stroke="#0ea5a8" stroke-width="1.5"/>
+          <!-- angle annotation -->
+          <line x1="20" y1="80" x2="200" y2="80" stroke="#7a9ab8" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <path d="M20,50 L200,35" stroke="#ffc53d" stroke-width="1" stroke-dasharray="2,2"/>
+          <text x="80" y="60" font-family="monospace" font-size="8" fill="#ffc53d">θ ≤ 10°</text>
+          <!-- streamlines -->
+          <path class="flow-path" style="animation-delay:0s" d="M20,55 Q220,50 420,35" stroke="#0ea5a8" stroke-width="1" fill="none" stroke-opacity="0.6"/>
+          <path class="flow-path" style="animation-delay:-0.8s" d="M20,80 Q220,80 420,80" stroke="#0ea5a8" stroke-width="1.5" fill="none"/>
+          <path class="flow-path" style="animation-delay:-1.6s" d="M20,105 Q220,110 420,125" stroke="#0ea5a8" stroke-width="1" fill="none" stroke-opacity="0.6"/>
+          <!-- pressure graph -->
+          <path d="M20,145 Q120,140 220,130 Q320,118 420,105" stroke="#ffc53d" stroke-width="1.5" fill="none"/>
+          <text x="15" y="152" font-family="monospace" font-size="7" fill="#ffc53d">p(x)</text>
+          <text x="380" y="100" font-family="monospace" font-size="7" fill="#ffc53d">p↑</text>
+          <!-- velocity indicators -->
+          <line x1="20" y1="80" x2="60" y2="80" stroke="#e8390e" stroke-width="3" marker-end="url(#arr)"/>
+          <line x1="420" y1="80" x2="440" y2="80" stroke="#0ea5a8" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="25" y="145" font-family="monospace" font-size="7" fill="#e8390e">V₁</text>
+          <text x="415" y="145" font-family="monospace" font-size="7" fill="#0ea5a8">V₂≪V₁</text>
+          <defs>
+            <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#f97c2e"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+
+      <h4>Esempio Pratico — Costruzioni Aeronautiche</h4>
+      <div class="example-box">
+        <div class="ex-label">Presa d'aria subsoniche</div>
+        <p>Il diffusore è il componente aerodinamico più critico nelle prese d'aria dei motori turbofan. La presa d'aria del CFM56 (Boeing 737) decelera il flusso da ~250 m/s (Ma ≈ 0.8 in crociera) a ~130 m/s all'ingresso del compressore, con un recupero di pressione totale η_r &gt; 99.5%. Un angolo di apertura eccessivo causerebbe separazione e stall del compressore: il problema aerodinamico è esattamente lo stesso del diffusore divergente di una galleria del vento.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- QUIZ -->
+      <div class="quiz-wrap" id="quiz-q4">
+        <div class="quiz-label">✦ Mini Quiz — Metti alla prova le tue conoscenze</div>
+        <div class="quiz-question">Nel diffusore divergente, quale fenomeno si verifica se l'angolo di semiapertura θ supera ~10°?</div>
+        <div class="quiz-options">
+      <button class="quiz-opt" data-qid="q4" data-idx="0">
+        <span class="opt-key">A</span>Il flusso accelera ulteriormente per via di Bernoulli
+      </button>
+      <button class="quiz-opt" data-qid="q4" data-idx="1">
+        <span class="opt-key">B</span>Il numero di Mach supera 1 (flusso supersonico)
+      </button>
+      <button class="quiz-opt" data-qid="q4" data-idx="2">
+        <span class="opt-key">C</span>Lo strato limite separa dalla parete (stall del diffusore)
+      </button>
+      <button class="quiz-opt" data-qid="q4" data-idx="3">
+        <span class="opt-key">D</span>La pressione statica diminuisce anziché aumentare
+      </button>
+        </div>
+        <div class="quiz-feedback" id="fb-q4"></div>
+        <button class="quiz-retry" id="retry-q4" style="display:none">↺ Riprova</button>
+      </div>
+
+      <div class="quiz-wrap" id="quiz-q4">
+        <div class="quiz-label">✦ Mini Quiz</div>
+        <div class="quiz-question">Nel diffusore divergente, cosa accade se l'angolo di semiapertura θ supera ~10°?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-qid="q4" data-idx="0"><span class="opt-key">A</span>Il flusso accelera ulteriormente per via di Bernoulli</button>
+          <button class="quiz-opt" data-qid="q4" data-idx="1"><span class="opt-key">B</span>Il numero di Mach supera 1 (flusso supersonico)</button>
+          <button class="quiz-opt" data-qid="q4" data-idx="2"><span class="opt-key">C</span>Lo strato limite separa dalla parete (stall del diffusore)</button>
+          <button class="quiz-opt" data-qid="q4" data-idx="3"><span class="opt-key">D</span>La pressione statica diminuisce anziché aumentare</button>
+        </div>
+        <div class="quiz-feedback" id="fb-q4"></div>
+        <button class="quiz-retry" id="retry-q4" style="display:none">↺ Riprova</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 5: Reynolds -->
+
+<div class="modal-overlay" id="modal-reynolds">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="--accent-line: #ffc53d">
+      <div class="modal-tag">05 / 06 — Aerodynamic Similarity</div>
+      <h2 class="modal-title">Similitudine<br>Aerodinamica & Re</h2>
+      <button class="modal-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>Numero di Reynolds</h4>
+      <p>Il numero di Reynolds (Re) è il parametro adimensionale che esprime il rapporto tra le forze inerziali e le forze viscose in un fluido:</p>
+      <div class="formula-box">
+        Re = (ρ · V · L) / μ  =  (V · L) / ν
+        <br><br>
+        ρ = densità dell'aria [kg/m³]
+        <br>V = velocità di riferimento [m/s]
+        <br>L = lunghezza caratteristica (es. corda alare) [m]
+        <br>μ = viscosità dinamica [Pa·s]
+        <br>ν = μ/ρ = viscosità cinematica [m²/s]
+        <br><br>
+        Aria a 20°C, 1 atm:  ν ≈ 1.5 × 10⁻⁵ m²/s
+      </div>
+
+      <h4>Transizione Laminare–Turbolento</h4>
+      <p>Per la lastra piana, il valore critico di transizione è Re_cr ≈ 5 × 10⁵. Al di sopra di questo valore, lo strato limite diventa turbolento, con drastico aumento del coefficiente di attrito Cf. Nei profili alari, la transizione avviene localmente e dipende dalla forma del profilo, dal gradiente di pressione e dalla rugosità superficiale.</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 460 170" style="width:100%;height:auto">
+          <rect width="460" height="170" fill="#07090f"/>
+          <!-- axes -->
+          <line x1="40" y1="140" x2="440" y2="140" stroke="#3d5470" stroke-width="1"/>
+          <line x1="40" y1="20" x2="40" y2="140" stroke="#3d5470" stroke-width="1"/>
+          <text x="230" y="160" text-anchor="middle" font-family="monospace" font-size="8" fill="#7a9ab8">Re</text>
+          <text x="15" y="80" font-family="monospace" font-size="8" fill="#7a9ab8">Cf</text>
+          <!-- laminar Cf curve -->
+          <path d="M40,50 Q150,80 250,115" stroke="#3b82f6" stroke-width="2" fill="none"/>
+          <!-- transition jump -->
+          <line x1="250" y1="115" x2="270" y2="60" stroke="#ffc53d" stroke-width="2" stroke-dasharray="4,2"/>
+          <!-- turbulent Cf curve -->
+          <path d="M270,60 Q360,80 440,95" stroke="#e8390e" stroke-width="2" fill="none"/>
+          <!-- Labels -->
+          <text x="80" y="70" font-family="monospace" font-size="8" fill="#3b82f6">Laminare</text>
+          <text x="80" y="82" font-family="monospace" font-size="7" fill="#3b82f6">Cf ∝ Re⁻⁰·⁵</text>
+          <text x="320" y="72" font-family="monospace" font-size="8" fill="#e8390e">Turbolento</text>
+          <text x="320" y="84" font-family="monospace" font-size="7" fill="#e8390e">Cf ∝ Re⁻⁰·²</text>
+          <!-- transition line -->
+          <line x1="260" y1="20" x2="260" y2="140" stroke="#ffc53d" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <text x="258" y="15" text-anchor="middle" font-family="monospace" font-size="7" fill="#ffc53d">Re_cr ≈ 5×10⁵</text>
+          <!-- Re values on x axis -->
+          <text x="40" y="152" font-family="monospace" font-size="7" fill="#7a9ab8">10⁴</text>
+          <text x="150" y="152" font-family="monospace" font-size="7" fill="#7a9ab8">10⁵</text>
+          <text x="260" y="152" font-family="monospace" font-size="7" fill="#ffc53d">5×10⁵</text>
+          <text x="370" y="152" font-family="monospace" font-size="7" fill="#7a9ab8">10⁶</text>
+        </svg>
+      </div>
+
+      <h4>Similitudine Aerodinamica: Test in Scala</h4>
+      <p>Per ottenere risultati validi da un modello in scala λ (es. λ = 1/4 significa scala 1:4), il numero di Reynolds del test deve uguagliare quello del caso reale:</p>
+      <div class="formula-box">
+        Re_modello = Re_reale
+        <br><br>
+        (V · L / ν)_modello = (V · L / ν)_reale
+        <br><br>
+        Se L_mod = L_reale / 4  ⟹  V_mod = 4 · V_reale
+        <br><span class="comment">  oppure ridurre ν con gas pressurizzato (gallerie pressurizzate)</span>
+      </div>
+
+      <h4>Esempio Pratico — Costruzioni Aeronautiche</h4>
+      <div class="example-box">
+        <div class="ex-label">Test ala in scala 1:3</div>
+        <p>Per testare un'ala da 5 m di corda (chord) a Ma = 0.3 (V ≈ 102 m/s), si ha Re_reale = 102 × 5 / 1.5×10⁻⁵ ≈ 3.4 × 10⁷. Con un modello in scala 1:3 (corda = 1.67 m), per mantenere lo stesso Re occorre V_modello = 3 × 102 ≈ 306 m/s (Ma ≈ 0.9), troppo alta per una galleria subsoniche. La soluzione adottata dalla NASA e da grandi centri è pressurizzare la galleria (aumentare ρ, abbassare ν) per ottenere Re elevati a velocità moderate. La galleria Pininfarina opera a pressione ambiente, quindi per Re molto elevati si usano modelli il più possibile vicini alla scala 1:1.</p>
+      </div>
+
+      <!-- ═══ CALCOLATORE VETTORE VELOCITÀ ═══ -->
+      <h4>🧮 Calcolatore — Componenti Cartesiane del Vettore Velocità</h4>
+      <p>Inserisci il modulo <strong>|V|</strong> e l'angolo <strong>θ</strong> (rispetto all'asse x positivo) per ottenere le componenti cartesiane e visualizzare il vettore nel piano.</p>
+
+      <div class="calc-wrap" id="vec-calc">
+        <div class="calc-inputs">
+          <div class="calc-field">
+            <label for="vec-mod">|V| — Modulo [m/s]</label>
+            <input type="number" id="vec-mod" value="100" min="0" max="999" step="1" placeholder="es. 100">
+          </div>
+          <div class="calc-field">
+            <label for="vec-ang">θ — Angolo [°]</label>
+            <input type="number" id="vec-ang" value="35" min="-360" max="360" step="1" placeholder="es. 35">
+          </div>
+          <div class="calc-field full">
+            <label>Quadrante rapido</label>
+            <div class="quad-btns">
+              <button class="quad-btn" data-ang="0">0°</button>
+              <button class="quad-btn" data-ang="30">30°</button>
+              <button class="quad-btn" data-ang="45">45°</button>
+              <button class="quad-btn" data-ang="60">60°</button>
+              <button class="quad-btn" data-ang="90">90°</button>
+              <button class="quad-btn" data-ang="135">135°</button>
+              <button class="quad-btn" data-ang="180">180°</button>
+              <button class="quad-btn" data-ang="270">270°</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-results">
+          <div class="res-item">
+            <span class="res-label">vₓ = |V| · cos θ</span>
+            <span class="res-val" id="res-vx">81.92 m/s</span>
+          </div>
+          <div class="res-item">
+            <span class="res-label">vᵧ = |V| · sin θ</span>
+            <span class="res-val" id="res-vy">57.36 m/s</span>
+          </div>
+          <div class="res-item">
+            <span class="res-label">Verifica: √(vₓ²+vᵧ²)</span>
+            <span class="res-val" id="res-check">100.00 m/s</span>
+          </div>
+          <div class="res-item">
+            <span class="res-label">Quadrante</span>
+            <span class="res-val" id="res-quad">I°</span>
+          </div>
+        </div>
+
+        <!-- SVG Canvas -->
+        <div class="calc-canvas-wrap">
+          <canvas id="vec-canvas" width="420" height="320" aria-label="Diagramma vettore velocità"></canvas>
+        </div>
+
+        <div class="calc-formula-note">
+          <strong>Decomposizione vettoriale:</strong>
+          V⃗ = vₓ î + vᵧ ĵ &nbsp;|&nbsp; vₓ = |V| cos θ &nbsp;|&nbsp; vᵧ = |V| sin θ
+        </div>
+      </div>
+
+      <div class="quiz-wrap" id="quiz-q5">
+        <div class="quiz-label">✦ Mini Quiz</div>
+        <div class="quiz-question">Un modello in scala 1:4 viene testato in galleria. Per rispettare la similitudine di Reynolds (Re_mod = Re_reale) con lo stesso fluido, V_modello deve essere:</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-qid="q5" data-idx="0"><span class="opt-key">A</span>Uguale alla velocità reale</button>
+          <button class="quiz-opt" data-qid="q5" data-idx="1"><span class="opt-key">B</span>4 volte la velocità reale</button>
+          <button class="quiz-opt" data-qid="q5" data-idx="2"><span class="opt-key">C</span>La metà della velocità reale</button>
+          <button class="quiz-opt" data-qid="q5" data-idx="3"><span class="opt-key">D</span>16 volte la velocità reale</button>
+        </div>
+        <div class="quiz-feedback" id="fb-q5"></div>
+        <button class="quiz-retry" id="retry-q5" style="display:none">↺ Riprova</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 6: Applicazioni -->
+<div class="modal-overlay" id="modal-applicazioni">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="--accent-line: #f97c2e">
+      <div class="modal-tag">06 / 06 — Multidisciplinary Applications</div>
+      <h2 class="modal-title">Applicazioni<br>Multidisciplinari</h2>
+      <button class="modal-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>Ferrari Testarossa — Automotive</h4>
+      <p>La galleria Pininfarina ha ospitato lo sviluppo aerodinamico di vetture iconiche come la Ferrari Testarossa. I test misurano coefficiente di resistenza Cd, portanza Cl (e distribuzione avantreno/retrotreno), momenti aerodinamici e raffreddamento. La bilancia aerodinamica da 50 g di precisione permette di misurare variazioni di forza di decimi di Newton, cruciali per la messa a punto del bilanciamento asse.</p>
+      <div class="formula-box">
+        F_drag = ½ · ρ · V² · A_front · Cd
+        <br>F_lift = ½ · ρ · V² · A_plan · Cl
+        <br><br>
+        Esempio Testarossa (stima):  Cd ≈ 0.36,  A_front ≈ 1.85 m²
+        <br>F_drag @ 250 km/h ≈ ½ × 1.225 × 69.4² × 1.85 × 0.36 ≈ 1,910 N
+      </div>
+
+      <h4>Ciclismo & Sci Alpino</h4>
+      <p>I corridori ciclisti su pista e gli sciatori si sottopongono a sessioni in galleria per ottimizzare la postura aerodinamica e l'equipaggiamento (casco, tuta, telai). In queste discipline il corpo dell'atleta rappresenta &gt;80% della resistenza totale. Il risparmio anche dell'1% sul Cd può valere decine di secondi su una gara di 1 ora.</p>
+
+      <h4>Infrastrutture Civili</h4>
+      <p>La galleria viene usata per testare modelli di ponti, edifici e torri. Il principio applicato è lo stesso: misurare le forze aerodinamiche in condizioni controllate per prevenire fenomeni di <em>flutter</em> (instabilità aeroelastica) e di oscillazione da vortice (vortex-induced vibration, VIV).</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 460 150" style="width:100%;height:auto">
+          <rect width="460" height="150" fill="#07090f"/>
+          <!-- Car -->
+          <g transform="translate(20,30)">
+            <path d="M0,55 Q10,35 30,25 Q70,10 110,25 Q130,32 140,55 L140,65 L0,65 Z" fill="#e8390e" opacity="0.8"/>
+            <path d="M35,25 Q50,8 80,5 Q110,2 130,18 L125,25 L35,25 Z" fill="#1e3a5f"/>
+            <circle cx="25" cy="65" r="12" fill="#111" stroke="#555" stroke-width="2"/>
+            <circle cx="115" cy="65" r="12" fill="#111" stroke="#555" stroke-width="2"/>
+            <text x="70" y="100" text-anchor="middle" font-family="monospace" font-size="8" fill="#e8390e">AUTOMOTIVE</text>
+            <text x="70" y="112" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a9ab8">Cd, Cl, Cx</text>
+          </g>
+          <!-- Cyclist -->
+          <g transform="translate(195,20)">
+            <circle cx="30" cy="20" r="10" fill="none" stroke="#ffc53d" stroke-width="1.5"/>
+            <path d="M30,30 L25,60 L15,80" stroke="#ffc53d" stroke-width="1.5" fill="none"/>
+            <path d="M30,30 L35,50 L50,65" stroke="#ffc53d" stroke-width="1.5" fill="none"/>
+            <circle cx="15" cy="82" r="10" fill="none" stroke="#ffc53d" stroke-width="1.5"/>
+            <circle cx="52" cy="65" r="10" fill="none" stroke="#ffc53d" stroke-width="1.5"/>
+            <text x="30" y="112" text-anchor="middle" font-family="monospace" font-size="8" fill="#ffc53d">CICLISMO</text>
+            <text x="30" y="124" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a9ab8">postura, casco</text>
+          </g>
+          <!-- Bridge -->
+          <g transform="translate(330,10)">
+            <rect x="20" y="50" width="8" height="70" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+            <rect x="80" y="50" width="8" height="70" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+            <path d="M0,50 Q24,10 84,50" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+            <path d="M28,50 L28,15" stroke="#3b82f6" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <path d="M80,50 L80,15" stroke="#3b82f6" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <path d="M0,55 L108,55" stroke="#3b82f6" stroke-width="2"/>
+            <text x="54" y="112" text-anchor="middle" font-family="monospace" font-size="8" fill="#3b82f6">PONTI</text>
+            <text x="54" y="124" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a9ab8">flutter, VIV</text>
+          </g>
+        </svg>
+      </div>
+
+      <h4>Esempio Pratico — Costruzioni Aeronautiche</h4>
+      <div class="example-box">
+        <div class="ex-label">Trasferimento tecnologico</div>
+        <p>Le tecniche sviluppate in galleria del vento per le auto da corsa (Formula 1) sono direttamente trasferite all'industria aeronautica: la bilancia a sei componenti (Fx, Fy, Fz, Mx, My, Mz) usata per misurare le forze su un'ala di F1 è identica a quella usata per testare profili aerodinamici di velivoli UAV. I sistemi PIV (Particle Image Velocimetry) per visualizzare il campo di velocità intorno a una vettura in Pininfarina sono gli stessi usati nel laboratorio di fluidodinamica del Politecnico per analizzare lo strato limite su profili NACA.</p>
+      </div>
+
+      <div class="quiz-wrap" id="quiz-q6">
+        <div class="quiz-label">✦ Mini Quiz</div>
+        <div class="quiz-question">Quale grandezza fisica misura la bilancia a 6 componenti nella galleria Pininfarina?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-qid="q6" data-idx="0"><span class="opt-key">A</span>Solo la resistenza aerodinamica Drag (Fx)</button>
+          <button class="quiz-opt" data-qid="q6" data-idx="1"><span class="opt-key">B</span>Forze (Fx, Fy, Fz) e momenti (Mx, My, Mz) con precisione di 50 g</button>
+          <button class="quiz-opt" data-qid="q6" data-idx="2"><span class="opt-key">C</span>Il numero di Reynolds del flusso incidente</button>
+          <button class="quiz-opt" data-qid="q6" data-idx="3"><span class="opt-key">D</span>La velocità del tappeto mobile e la temperatura del fluido</button>
+        </div>
+        <div class="quiz-feedback" id="fb-q6"></div>
+        <button class="quiz-retry" id="retry-q6" style="display:none">↺ Riprova</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="footer">
+  IAQUANIELLO MATTEO · AEROTECNICA E STRUTTURE AERONAUTICHE · CLASSE 3ACA · GALLERIA DEL VENTO PININFARINA<br>
+  Docenti: Chiariello / Mentella / Raucci · Deadline: 22 Maggio 2026
+</footer>
+
+<!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+<script>
+  // ── Vector Calculator ──
+  const modInput = document.getElementById('vec-mod');
+  const angInput = document.getElementById('vec-ang');
+  const resVx    = document.getElementById('res-vx');
+  const resVy    = document.getElementById('res-vy');
+  const resCheck = document.getElementById('res-check');
+  const resQuad  = document.getElementById('res-quad');
+  const canvas   = document.getElementById('vec-canvas');
+  const ctx      = canvas ? canvas.getContext('2d') : null;
+
+  function quadrant(vx, vy) {
+    if (vx >= 0 && vy >= 0) return 'I° (x⁺, y⁺)';
+    if (vx <  0 && vy >= 0) return 'II° (x⁻, y⁺)';
+    if (vx <  0 && vy <  0) return 'III° (x⁻, y⁻)';
+    return 'IV° (x⁺, y⁻)';
+  }
+
+  function drawVector(vx, vy, mod) {
+    if (!ctx) return;
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+    const scale = Math.min((W * 0.38) / (mod || 1), 2.2);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = '#2e4260';
+    ctx.lineWidth = 0.5;
+    const step = 40;
+    for (let x = cx % step; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = cy % step; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    // Axes
+    ctx.strokeStyle = '#3d5c7a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = '#7a9ab8';
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillText('x', W - 14, cy - 6);
+    ctx.fillText('y', cx + 6, 14);
+    ctx.fillText('O', cx + 4, cy + 14);
+
+    if (mod === 0) return;
+
+    const ex = vx * scale, ey = -vy * scale; // canvas y is inverted
+    const ex2 = cx + ex, ey2 = cy + ey;
+
+    // Component dashed lines
+    ctx.setLineDash([5,4]);
+    ctx.lineWidth = 1.2;
+
+    ctx.strokeStyle = '#5b9ef6';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex2, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ex2, cy); ctx.lineTo(ex2, ey2); ctx.stroke();
+
+    ctx.strokeStyle = '#f97c2e';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, ey2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, ey2); ctx.lineTo(ex2, ey2); ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // Arc for angle
+    const angRad = Math.atan2(-ey, ex);
+    ctx.strokeStyle = '#ffc53d';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 28, 0, -angRad, angRad < 0);
+    ctx.stroke();
+
+    // Component labels on axes
+    ctx.fillStyle = '#5b9ef6';
+    ctx.font = 'bold 10px IBM Plex Mono, monospace';
+    const vxLabel = vx.toFixed(1);
+    ctx.fillText('vₓ=' + vxLabel, cx + ex/2 - 20, cy + 14);
+
+    ctx.fillStyle = '#f97c2e';
+    const vyLabel = vy.toFixed(1);
+    ctx.fillText('vᵧ=' + vyLabel, cx + 6, cy + ey/2);
+
+    // Angle label
+    ctx.fillStyle = '#ffc53d';
+    ctx.font = '10px IBM Plex Mono, monospace';
+    const angDeg = parseFloat(angInput.value) || 0;
+    ctx.fillText('θ=' + angDeg + '°', cx + 34, cy - 6);
+
+    // Main vector arrow
+    ctx.strokeStyle = '#e8390e';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(ex2, ey2);
+    ctx.stroke();
+
+    // Arrowhead
+    const angle = Math.atan2(ey2 - cy, ex2 - cx);
+    const aLen = 12;
+    ctx.fillStyle = '#e8390e';
+    ctx.beginPath();
+    ctx.moveTo(ex2, ey2);
+    ctx.lineTo(ex2 - aLen * Math.cos(angle - 0.4), ey2 - aLen * Math.sin(angle - 0.4));
+    ctx.lineTo(ex2 - aLen * Math.cos(angle + 0.4), ey2 - aLen * Math.sin(angle + 0.4));
+    ctx.closePath();
+    ctx.fill();
+
+    // Vector label |V|
+    ctx.fillStyle = '#e8390e';
+    ctx.font = 'bold 11px IBM Plex Mono, monospace';
+    ctx.fillText('|V|=' + mod.toFixed(0) + ' m/s', ex2 + 6, ey2 - 6);
+  }
+
+  function updateCalc() {
+    const mod = Math.abs(parseFloat(modInput.value) || 0);
+    const deg = parseFloat(angInput.value) || 0;
+    const rad = deg * Math.PI / 180;
+    const vx = mod * Math.cos(rad);
+    const vy = mod * Math.sin(rad);
+    const check = Math.sqrt(vx * vx + vy * vy);
+
+    resVx.textContent    = vx.toFixed(2) + ' m/s';
+    resVy.textContent    = vy.toFixed(2) + ' m/s';
+    resCheck.textContent = check.toFixed(2) + ' m/s';
+    resQuad.textContent  = quadrant(vx, vy);
+
+    drawVector(vx, vy, mod);
+
+    // highlight active quad button
+    document.querySelectorAll('.quad-btn').forEach(b => {
+      b.classList.toggle('active', parseFloat(b.dataset.ang) === deg);
+    });
+  }
+
+  if (modInput && angInput) {
+    modInput.addEventListener('input', updateCalc);
+    angInput.addEventListener('input', updateCalc);
+
+    document.querySelectorAll('.quad-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        angInput.value = btn.dataset.ang;
+        updateCalc();
+      });
+    });
+
+    // Run once on load for initial state, and again when modal opens
+    updateCalc();
+
+    // Re-draw when modal opens (canvas may have been hidden)
+    document.getElementById('modal-reynolds').addEventListener('transitionend', () => {
+      if (document.getElementById('modal-reynolds').classList.contains('open')) updateCalc();
+    });
+  }
+
+  // ── Scroll Reveal for cards ──
+  const cards = document.querySelectorAll('.card');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('revealed'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  cards.forEach(card => observer.observe(card));
+
+  // ── Modal Logic ──
+  function openModal(id) {
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // focus trap
+    overlay.querySelector('.modal-close').focus();
+  }
+
+  function closeModal(overlay) {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // open via card click
+  cards.forEach(card => {
+    card.addEventListener('click', () => openModal(card.dataset.modal));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(card.dataset.modal); }
+    });
+  });
+
+  // close buttons
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.closest('.modal-overlay')));
+  });
+
+  // close on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal(overlay);
+    });
+  });
+
+  // close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(closeModal);
+    }
+  });
+</script>
+</body>
+</html>
